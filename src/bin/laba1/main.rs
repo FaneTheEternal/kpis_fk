@@ -53,24 +53,20 @@ fn p1() {
     );
 }
 
-fn gcd_euclid(mut a: isize, mut b: isize) -> (isize, isize, isize) {
-    let mut a_count = 0;
-    let mut b_count = 0;
+fn gcd_euclid(mut a: isize, mut b: isize) -> isize {
     while a > 0 && b > 0 {
         if a > b {
             a %= b;
-            b_count += 1;
         } else {
             b %= a;
-            a_count += 1;
         }
     }
-    return (a + b, a_count, b_count);
+    return a + b;
 }
 
 fn p2() {
     p0(2);
-    println!("GCD Euclid {}, {} => {}", A, B, gcd_euclid(A, B).0);
+    println!("GCD Euclid {}, {} => {}", A, B, gcd_euclid(A, B));
 
     let mut a = split(A);
     let mut b = split(B);
