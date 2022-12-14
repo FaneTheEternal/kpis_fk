@@ -1,3 +1,4 @@
+use num::BigInt;
 use num_bigint::BigInt;
 
 const Q: isize = 29;

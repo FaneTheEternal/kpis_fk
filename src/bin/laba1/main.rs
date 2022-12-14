@@ -1,8 +1,8 @@
 use std::collections::hash_map::Entry;
 use std::collections::HashMap;
 use std::ops::AddAssign;
-use num_bigint::BigInt;
-use num_integer::{Integer, Roots};
+use num::{BigInt, Integer};
+use num::integer::Roots;
 
 const A: isize = 5999801;
 const B: isize = 48685811;
