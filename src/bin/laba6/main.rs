@@ -120,7 +120,7 @@ fn gen_c_d(rng: &mut ThreadRng, rb: &RandomBits, p: &BigUint) -> (BigUint, BigUi
     }
     (
         c.clone(),
-        mod_inv(BigInt::from(c), BigInt::from(p.clone())).try_into().unwrap()
+        mod_inv(BigInt::from(c), BigInt::from(p_1)).try_into().unwrap()
     )
 }
 
@@ -158,6 +158,15 @@ impl Alice {
         u.shuffle(rng);
         u
     }
+
+    fn know_card(&self, u: BigUint) -> BigUint {
+        u.modpow(&self.d, &self.p)
+    }
+
+    fn pick(&self, mut v: Vec<BigUint>, rng: &mut impl Rng) -> BigUint {
+        let v = v.remove(rng.gen_range(0..v.len()));
+        v.modpow(&self.d, &self.p)
+    }
 }
 
 #[derive(Debug)]
@@ -177,12 +186,20 @@ impl Bob {
 
     fn pick(&self, mut u: Vec<BigUint>, rng: &mut impl Rng) -> (BigUint, Vec<BigUint>) {
         let u_ = u.remove(rng.gen_range(0..u.len()));
+        let mut v = u.into_iter()
+            .map(|u| u.modpow(&self.c, &self.p))
+            .collect::<Vec<_>>();
+        if rng.gen_bool(0.5) {
+            v.shuffle(rng);
+        }
         (
             u_,
-            u.into_iter()
-                .map(|u| u.modpow(&self.c, &self.p))
-                .collect()
+            v
         )
+    }
+
+    fn know_card(&self, w: BigUint) -> BigUint {
+        w.modpow(&self.d, &self.p)
     }
 }
 
@@ -202,9 +219,17 @@ fn main() {
         .collect::<Vec<_>>().join(", ")
     );
     let (u_, v) = bob.pick(u, &mut rng);
-    println!("Bob choice u^: {}", u_);
+    let u_ = alice.know_card(u_);
+    println!("Alice get card(u^): {}", u_);
     println!("Bob send v: [{}]", v.iter().enumerate()
         .map(|(i, e)| format!("v{}: {}", i + 1, e))
         .collect::<Vec<_>>().join(", ")
     );
+    let w = alice.pick(v, &mut rng);
+    println!("Alice send w: {}", w);
+    let z = bob.know_card(w);
+    println!("Bob get card(z): {}", z);
+    let mut stock = vec![a, b, y];
+    stock.retain(|e| !(e.eq(&u_) || e.eq(&z)));
+    println!("Remained in stock: {:?}", stock);
 }
